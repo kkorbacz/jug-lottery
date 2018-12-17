@@ -1,22 +1,28 @@
-plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.2.71'
+
+buildscript {
+    ext.kotlin_version = '1.3.10'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.10"
+    }
 }
+
+apply plugin: 'kotlin'
+apply plugin: 'application'
+
+mainClassName = 'org.kkorbacz.JugLotteryKt'
+
+defaultTasks 'run'
+
 repositories {
     mavenCentral()
 }
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.twitter4j:twitter4j-core:4.0.7"
     compile "io.github.microutils:kotlin-logging:1.6.22"
     compile "ch.qos.logback:logback-classic:1.2.3"
-}
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
