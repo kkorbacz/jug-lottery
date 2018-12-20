@@ -23,6 +23,7 @@ class JugLottery {
                 .distinctBy{ it.user.screenName }
                 .filter{ !it.isRetweet }
                 .filter{ it.createdAt.after(MEETUP_START_DATE_TIME) }
+                .filter{ it.user.screenName != "KielceJava" }
                 .sortedBy { it.createdAt }
                 .mapIndexed{ idx, tweet -> Pair(idx + 1, HandleAndTweetText(tweet.user.screenName, tweet.text))}
                 .toMap()
