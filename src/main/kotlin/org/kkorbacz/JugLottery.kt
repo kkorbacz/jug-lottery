@@ -1,41 +1,29 @@
 package org.kkorbacz
 
 import mu.KotlinLogging
-import twitter4j.Query
-import twitter4j.Status
-import twitter4j.TwitterFactory
+import java.text.SimpleDateFormat
 
 private const val GENERATOR_DELAY_IN_MILLIS = 10000L
-@Suppress("Unused")
 private const val DEFAULT_NO_OF_LUCKY_NUMBERS = 4
+
+private val DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+private val MEETUP_START_DATE_TIME = DATE_FORMAT.parse("2018-12-20 18:00:00")
 
 private typealias HandleAndTweetText = Pair<String, String>
 
 private val log = KotlinLogging.logger {}
 
-// todo remove whitespaces from tweet text before printout
-// todo document which application version (or commit) was used when running lottery
-// todo add unit tests
-// todo adjust build.gradle
-// todo add proper since (meaning date not hours)
-// todo filter out tweets created before the meetup
-// todo handle corner cases (0 tweets, 1 tweet, mismatch due to incorrect input params)
-// todo verify order of tweets
-// todo warn when full page returned
-// todo nullability of list of tweets
-// todo no retweets in search result
-// todo place debug logs into separate file (second appender)
-// todo add info about data fidelity of standard search api into README.md
-// todo divide code into neat classes
 fun main(args: Array<String>) {
     JugLottery().run()
 }
 
 class JugLottery {
     fun run() {
-        val idxToHandle = getTweetsWith("#kielcejava")
-                .also { log.debug {"Got the following tweets: [$it]"} }
+        val idxToHandle = TwitterServiceWrapper.getTweetsWith("#kielcejava")
                 .distinctBy{ it.user.screenName }
+                .filter{ !it.isRetweet }
+                .filter{ it.createdAt.after(MEETUP_START_DATE_TIME) }
+                .sortedBy { it.createdAt }
                 .mapIndexed{ idx, tweet -> Pair(idx + 1, HandleAndTweetText(tweet.user.screenName, tweet.text))}
                 .toMap()
 
@@ -45,22 +33,14 @@ class JugLottery {
 
         log.info {"Generating lucky numbers ..."}
         Thread.sleep(GENERATOR_DELAY_IN_MILLIS)
-        val luckyNumbers = pickLuckyNumbers(numberOfDistinctTweets, 2)
+        val luckyNumbers = pickLuckyNumbers(numberOfDistinctTweets, DEFAULT_NO_OF_LUCKY_NUMBERS)
         log.info {"And the lucky numbers are: $luckyNumbers"}
 
         log.info {"Which maps to the following JUG participants: "}
         luckyNumbers
                 .mapNotNull { idxToHandle[it] }
-                .forEach{ log.info("${it.first} with tweet: [${it.second}]") }
+                .forEach{ log.info("${it.first} with tweet: [${it.second.take(50)} ...]") }
     }
-}
-
-private fun getTweetsWith(hashTag: String): List<Status> {
-    val twitter = TwitterFactory.getSingleton()
-    val query = Query(hashTag)
-            .count(100)
-
-    return twitter.search(query).tweets
 }
 
 private fun pickLuckyNumbers(inclusiveUpperBound: Int, noOfLuckyNumbers: Int) =

@@ -6,10 +6,20 @@
             <pattern>%date{ISO8601} %-6level[%thread] %logger{0} - %msg%n</pattern>
         </encoder>
     </appender>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>JugLottery.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%date{ISO8601} %-6level[%thread] %logger{0} - %msg%n</pattern>
+        </encoder>
+    </appender>
 
-    <logger name="org.kkorbacz" level="DEBUG"/>
+    <logger name="org.kkorbacz.TwitterServiceWrapper" level="DEBUG" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
     </root>
 </configuration>
